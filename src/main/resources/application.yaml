@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: co-write-be-kt
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    
+mybatis:
+  type-aliases-package: io.github.hcisme.cowrite.entity.pojo,io.github.hcisme.cowrite.entity.query
+  configuration:
+    map-underscore-to-camel-case: true

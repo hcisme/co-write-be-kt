@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.hcisme.cowrite.mappers.DocumentMapper">
+
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="Document">
+		<!--文档id-->
+		<result column="id" property="id" />
+		<!--文档标题-->
+		<result column="title" property="title" />
+		<!--文档的创建者-->
+		<result column="owner_id" property="ownerId" />
+		<!--软删除标识 0:未删除 1:已删除-->
+		<result column="deleted" property="deleted" />
+		<!--创建时间-->
+		<result column="created_time" property="createdTime" />
+		<!--更新时间-->
+		<result column="updated_time" property="updatedTime" />
+	</resultMap>
+
+	<!-- 通用查询结果列-->
+	<sql id="base_column_list">
+		d.id, d.title, d.owner_id, d.deleted, d.created_time,
+		d.updated_time
+	</sql>
+
+	<sql id="base_condition_field">
+		<if test="query.id != null and query.id != ''">
+			and d.id = #{query.id}
+		</if>
+		<if test="query.title != null and query.title != ''">
+			and d.title = #{query.title}
+		</if>
+		<if test="query.ownerId != null and query.ownerId != ''">
+			and d.owner_id = #{query.ownerId}
+		</if>
+		<if test="query.deleted != null and query.deleted != ''">
+			and d.deleted = #{query.deleted}
+		</if>
+		<if test="query.createdTime != null and query.createdTime != ''">
+			<![CDATA[ and d.created_time = str_to_date(#{query.createdTime}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.updatedTime != null and query.updatedTime != ''">
+			<![CDATA[ and d.updated_time = str_to_date(#{query.updatedTime}, '%Y-%m-%d') ]]>
+		</if>
+	</sql>
+
+	<!-- 通用条件列-->
+	<sql id="base_condition">
+		<where>
+			<include refid="base_condition_field" />
+		</where>
+	</sql>
+
+	<!-- 通用查询条件列-->
+	<sql id="query_condition">
+		<where>
+			<include refid="base_condition_field" />
+			<if test="query.idFuzzy != null and query.idFuzzy != ''">
+				and d.id like concat('%', #{query.idFuzzy}, '%')
+			</if>
+			<if test="query.titleFuzzy != null and query.titleFuzzy != ''">
+				and d.title like concat('%', #{query.titleFuzzy}, '%')
+			</if>
+			<if test="query.ownerIdFuzzy != null and query.ownerIdFuzzy != ''">
+				and d.owner_id like concat('%', #{query.ownerIdFuzzy}, '%')
+			</if>
+			<if test="query.createdTimeStart != null and query.createdTimeStart != ''">
+				<![CDATA[ and d.created_time >= str_to_date(#{query.createdTimeStart}, '%Y-%m-%d') ]]>
+			</if>
+			<if test="query.createdTimeEnd != null and query.createdTimeEnd != ''">
+				<![CDATA[ and d.created_time < date_sub(str_to_date(#{query.createdTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+			</if>
+			<if test="query.updatedTimeStart != null and query.updatedTimeStart != ''">
+				<![CDATA[ and d.updated_time >= str_to_date(#{query.updatedTimeStart}, '%Y-%m-%d') ]]>
+			</if>
+			<if test="query.updatedTimeEnd != null and query.updatedTimeEnd != ''">
+				<![CDATA[ and d.updated_time < date_sub(str_to_date(#{query.updatedTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+			</if>
+		</where>
+	</sql>
+
+	<!-- 查询集合-->
+	<select id="selectList" resultMap="base_result_map" >
+		SELECT
+		<include refid="base_column_list" />
+		FROM document d
+		<include refid="query_condition" />
+		<if test="query.orderBy!=null and query.orderBy!=''">
+			order by ${query.orderBy}
+		</if>
+		<if test="query.simplePage!=null">
+			limit #{query.simplePage.start},#{query.simplePage.end}
+		</if>
+	</select>
+
+	<!-- 查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer" >
+		SELECT count(1) FROM document d
+		<include refid="query_condition" />
+	</select>
+
+	<!-- 插入 （匹配有值的字段）-->
+	<insert id="insert" parameterType="Document" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO document
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.title != null">
+				title,
+			</if>
+			<if test="bean.ownerId != null">
+				owner_id,
+			</if>
+			<if test="bean.deleted != null">
+				deleted,
+			</if>
+			<if test="bean.createdTime != null">
+				created_time,
+			</if>
+			<if test="bean.updatedTime != null">
+				updated_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.title != null">
+				#{bean.title},
+			</if>
+			<if test="bean.ownerId != null">
+				#{bean.ownerId},
+			</if>
+			<if test="bean.deleted != null">
+				#{bean.deleted},
+			</if>
+			<if test="bean.createdTime != null">
+				#{bean.createdTime},
+			</if>
+			<if test="bean.updatedTime != null">
+				#{bean.updatedTime},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或者更新 （匹配有值的字段）-->
+	<insert id="insertOrUpdate" parameterType="Document" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO document
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.title != null">
+				title,
+			</if>
+			<if test="bean.ownerId != null">
+				owner_id,
+			</if>
+			<if test="bean.deleted != null">
+				deleted,
+			</if>
+			<if test="bean.createdTime != null">
+				created_time,
+			</if>
+			<if test="bean.updatedTime != null">
+				updated_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.title != null">
+				#{bean.title},
+			</if>
+			<if test="bean.ownerId != null">
+				#{bean.ownerId},
+			</if>
+			<if test="bean.deleted != null">
+				#{bean.deleted},
+			</if>
+			<if test="bean.createdTime != null">
+				#{bean.createdTime},
+			</if>
+			<if test="bean.updatedTime != null">
+				#{bean.updatedTime},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.title != null">
+				title = VALUES(title),
+			</if>
+			<if test="bean.ownerId != null">
+				owner_id = VALUES(owner_id),
+			</if>
+			<if test="bean.deleted != null">
+				deleted = VALUES(deleted),
+			</if>
+			<if test="bean.createdTime != null">
+				created_time = VALUES(created_time),
+			</if>
+			<if test="bean.updatedTime != null">
+				updated_time = VALUES(updated_time),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 添加 （批量插入）-->
+	<insert id="insertBatch" parameterType="Document" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO document(
+		id,
+		title,
+		owner_id,
+		deleted,
+		created_time,
+		updated_time
+		) values
+		<foreach collection="list" item="item" separator=",">
+			(
+			#{item.id},
+			#{item.title},
+			#{item.ownerId},
+			#{item.deleted},
+			#{item.createdTime},
+			#{item.updatedTime}
+			)
+		</foreach>
+	</insert>
+
+	<!-- 批量新增修改 （批量插入）-->
+	<insert id="insertOrUpdateBatch" parameterType="Document">
+		INSERT INTO document(
+		id,
+		title,
+		owner_id,
+		deleted,
+		created_time,
+		updated_time
+		) values
+		<foreach collection="list" item="item" separator=",">
+			(
+			#{item.id},
+			#{item.title},
+			#{item.ownerId},
+			#{item.deleted},
+			#{item.createdTime},
+			#{item.updatedTime}
+			)
+		</foreach>
+		on DUPLICATE key update
+		id = VALUES(id),
+		title = VALUES(title),
+		owner_id = VALUES(owner_id),
+		deleted = VALUES(deleted),
+		created_time = VALUES(created_time),
+		updated_time = VALUES(updated_time)
+	</insert>
+
+	<!--多条件修改-->
+	<update id="updateByParam" parameterType="DocumentQuery">
+		UPDATE document d
+		<set>
+			<if test="bean.id != null">
+				id = #{bean.id},
+			</if>
+			<if test="bean.title != null">
+				title = #{bean.title},
+			</if>
+			<if test="bean.ownerId != null">
+				owner_id = #{bean.ownerId},
+			</if>
+			<if test="bean.deleted != null">
+				deleted = #{bean.deleted},
+			</if>
+			<if test="bean.createdTime != null">
+				created_time = #{bean.createdTime},
+			</if>
+			<if test="bean.updatedTime != null">
+				updated_time = #{bean.updatedTime},
+			</if>
+		</set>
+		<include refid="query_condition" />
+	</update>
+
+	<!--多条件删除-->
+	<delete id="deleteByParam">
+		delete d from document d
+		<include refid="query_condition" />
+	</delete>
+
+	<!-- 根据id修改-->
+	<update id="updateById">
+		UPDATE document
+		<set>
+			<if test="bean.title != null">
+				title = #{bean.title},
+			</if>
+			<if test="bean.ownerId != null">
+				owner_id = #{bean.ownerId},
+			</if>
+			<if test="bean.deleted != null">
+				deleted = #{bean.deleted},
+			</if>
+			<if test="bean.createdTime != null">
+				created_time = #{bean.createdTime},
+			</if>
+			<if test="bean.updatedTime != null">
+				updated_time = #{bean.updatedTime},
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<!-- 根据id删除-->
+	<delete id="deleteById">
+		delete from document where id = #{id}
+	</delete>
+
+	<!-- 根据id查询-->
+	<select id="selectById" resultMap="base_result_map" >
+		select
+		<include refid="base_column_list" />
+		from document d where d.id = #{id}
+	</select>
+
+</mapper>

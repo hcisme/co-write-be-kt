@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.hcisme.cowrite.mappers.SnapshotMapper">
+
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="Snapshot">
+		<!--文档快照表id-->
+		<result column="id" property="id" />
+		<!--文档id-->
+		<result column="doc_id" property="docId" />
+		<!--存储文档的内容-->
+		<result column="content" property="content" />
+		<!--存储 Yjs 的 Uint8Array 二进制快照-->
+		<result column="binary_state" property="binaryState" />
+		<!--版本名字-->
+		<result column="version_name" property="versionName" />
+		<!--创建者的id-->
+		<result column="creator_id" property="creatorId" />
+		<!--创建时间-->
+		<result column="created_time" property="createdTime" />
+	</resultMap>
+
+	<!-- 通用查询结果列-->
+	<sql id="base_column_list">
+		s.id, s.doc_id, s.content, s.binary_state, s.version_name,
+		s.creator_id, s.created_time
+	</sql>
+
+	<sql id="base_condition_field">
+		<if test="query.id != null and query.id != ''">
+			and s.id = #{query.id}
+		</if>
+		<if test="query.docId != null and query.docId != ''">
+			and s.doc_id = #{query.docId}
+		</if>
+		<if test="query.content != null and query.content != ''">
+			and s.content = #{query.content}
+		</if>
+		<if test="query.binaryState != null and query.binaryState != ''">
+			and s.binary_state = #{query.binaryState}
+		</if>
+		<if test="query.versionName != null and query.versionName != ''">
+			and s.version_name = #{query.versionName}
+		</if>
+		<if test="query.creatorId != null and query.creatorId != ''">
+			and s.creator_id = #{query.creatorId}
+		</if>
+		<if test="query.createdTime != null and query.createdTime != ''">
+			<![CDATA[ and s.created_time = str_to_date(#{query.createdTime}, '%Y-%m-%d') ]]>
+		</if>
+	</sql>
+
+	<!-- 通用条件列-->
+	<sql id="base_condition">
+		<where>
+			<include refid="base_condition_field" />
+		</where>
+	</sql>
+
+	<!-- 通用查询条件列-->
+	<sql id="query_condition">
+		<where>
+			<include refid="base_condition_field" />
+			<if test="query.docIdFuzzy != null and query.docIdFuzzy != ''">
+				and s.doc_id like concat('%', #{query.docIdFuzzy}, '%')
+			</if>
+			<if test="query.contentFuzzy != null and query.contentFuzzy != ''">
+				and s.content like concat('%', #{query.contentFuzzy}, '%')
+			</if>
+			<if test="query.versionNameFuzzy != null and query.versionNameFuzzy != ''">
+				and s.version_name like concat('%', #{query.versionNameFuzzy}, '%')
+			</if>
+			<if test="query.creatorIdFuzzy != null and query.creatorIdFuzzy != ''">
+				and s.creator_id like concat('%', #{query.creatorIdFuzzy}, '%')
+			</if>
+			<if test="query.createdTimeStart != null and query.createdTimeStart != ''">
+				<![CDATA[ and s.created_time >= str_to_date(#{query.createdTimeStart}, '%Y-%m-%d') ]]>
+			</if>
+			<if test="query.createdTimeEnd != null and query.createdTimeEnd != ''">
+				<![CDATA[ and s.created_time < date_sub(str_to_date(#{query.createdTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+			</if>
+		</where>
+	</sql>
+
+	<!-- 查询集合-->
+	<select id="selectList" resultMap="base_result_map" >
+		SELECT
+		<include refid="base_column_list" />
+		FROM doc_snapshot s
+		<include refid="query_condition" />
+		<if test="query.orderBy!=null and query.orderBy!=''">
+			order by ${query.orderBy}
+		</if>
+		<if test="query.simplePage!=null">
+			limit #{query.simplePage.start},#{query.simplePage.end}
+		</if>
+	</select>
+
+	<!-- 查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer" >
+		SELECT count(1) FROM doc_snapshot s
+		<include refid="query_condition" />
+	</select>
+
+	<!-- 插入 （匹配有值的字段）-->
+	<insert id="insert" parameterType="Snapshot" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO doc_snapshot
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.docId != null">
+				doc_id,
+			</if>
+			<if test="bean.content != null">
+				content,
+			</if>
+			<if test="bean.binaryState != null">
+				binary_state,
+			</if>
+			<if test="bean.versionName != null">
+				version_name,
+			</if>
+			<if test="bean.creatorId != null">
+				creator_id,
+			</if>
+			<if test="bean.createdTime != null">
+				created_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			<if test="bean.docId != null">
+				#{bean.docId},
+			</if>
+			<if test="bean.content != null">
+				#{bean.content},
+			</if>
+			<if test="bean.binaryState != null">
+				#{bean.binaryState},
+			</if>
+			<if test="bean.versionName != null">
+				#{bean.versionName},
+			</if>
+			<if test="bean.creatorId != null">
+				#{bean.creatorId},
+			</if>
+			<if test="bean.createdTime != null">
+				#{bean.createdTime},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或者更新 （匹配有值的字段）-->
+	<insert id="insertOrUpdate" parameterType="Snapshot" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO doc_snapshot
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.docId != null">
+				doc_id,
+			</if>
+			<if test="bean.content != null">
+				content,
+			</if>
+			<if test="bean.binaryState != null">
+				binary_state,
+			</if>
+			<if test="bean.versionName != null">
+				version_name,
+			</if>
+			<if test="bean.creatorId != null">
+				creator_id,
+			</if>
+			<if test="bean.createdTime != null">
+				created_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.docId != null">
+				#{bean.docId},
+			</if>
+			<if test="bean.content != null">
+				#{bean.content},
+			</if>
+			<if test="bean.binaryState != null">
+				#{bean.binaryState},
+			</if>
+			<if test="bean.versionName != null">
+				#{bean.versionName},
+			</if>
+			<if test="bean.creatorId != null">
+				#{bean.creatorId},
+			</if>
+			<if test="bean.createdTime != null">
+				#{bean.createdTime},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.docId != null">
+				doc_id = VALUES(doc_id),
+			</if>
+			<if test="bean.content != null">
+				content = VALUES(content),
+			</if>
+			<if test="bean.binaryState != null">
+				binary_state = VALUES(binary_state),
+			</if>
+			<if test="bean.versionName != null">
+				version_name = VALUES(version_name),
+			</if>
+			<if test="bean.creatorId != null">
+				creator_id = VALUES(creator_id),
+			</if>
+			<if test="bean.createdTime != null">
+				created_time = VALUES(created_time),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 添加 （批量插入）-->
+	<insert id="insertBatch" parameterType="Snapshot" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO doc_snapshot(
+		doc_id,
+		content,
+		binary_state,
+		version_name,
+		creator_id,
+		created_time
+		) values
+		<foreach collection="list" item="item" separator=",">
+			(
+			#{item.docId},
+			#{item.content},
+			#{item.binaryState},
+			#{item.versionName},
+			#{item.creatorId},
+			#{item.createdTime}
+			)
+		</foreach>
+	</insert>
+
+	<!-- 批量新增修改 （批量插入）-->
+	<insert id="insertOrUpdateBatch" parameterType="Snapshot">
+		INSERT INTO doc_snapshot(
+		id,
+		doc_id,
+		content,
+		binary_state,
+		version_name,
+		creator_id,
+		created_time
+		) values
+		<foreach collection="list" item="item" separator=",">
+			(
+			#{item.id},
+			#{item.docId},
+			#{item.content},
+			#{item.binaryState},
+			#{item.versionName},
+			#{item.creatorId},
+			#{item.createdTime}
+			)
+		</foreach>
+		on DUPLICATE key update
+		doc_id = VALUES(doc_id),
+		content = VALUES(content),
+		binary_state = VALUES(binary_state),
+		version_name = VALUES(version_name),
+		creator_id = VALUES(creator_id),
+		created_time = VALUES(created_time)
+	</insert>
+
+	<!--多条件修改-->
+	<update id="updateByParam" parameterType="SnapshotQuery">
+		UPDATE doc_snapshot s
+		<set>
+			<if test="bean.docId != null">
+				doc_id = #{bean.docId},
+			</if>
+			<if test="bean.content != null">
+				content = #{bean.content},
+			</if>
+			<if test="bean.binaryState != null">
+				binary_state = #{bean.binaryState},
+			</if>
+			<if test="bean.versionName != null">
+				version_name = #{bean.versionName},
+			</if>
+			<if test="bean.creatorId != null">
+				creator_id = #{bean.creatorId},
+			</if>
+			<if test="bean.createdTime != null">
+				created_time = #{bean.createdTime},
+			</if>
+		</set>
+		<include refid="query_condition" />
+	</update>
+
+	<!--多条件删除-->
+	<delete id="deleteByParam">
+		delete s from doc_snapshot s
+		<include refid="query_condition" />
+	</delete>
+
+	<!-- 根据id修改-->
+	<update id="updateById">
+		UPDATE doc_snapshot
+		<set>
+			<if test="bean.docId != null">
+				doc_id = #{bean.docId},
+			</if>
+			<if test="bean.content != null">
+				content = #{bean.content},
+			</if>
+			<if test="bean.binaryState != null">
+				binary_state = #{bean.binaryState},
+			</if>
+			<if test="bean.versionName != null">
+				version_name = #{bean.versionName},
+			</if>
+			<if test="bean.creatorId != null">
+				creator_id = #{bean.creatorId},
+			</if>
+			<if test="bean.createdTime != null">
+				created_time = #{bean.createdTime},
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<!-- 根据id删除-->
+	<delete id="deleteById">
+		delete from doc_snapshot where id = #{id}
+	</delete>
+
+	<!-- 根据id查询-->
+	<select id="selectById" resultMap="base_result_map" >
+		select
+		<include refid="base_column_list" />
+		from doc_snapshot s where s.id = #{id}
+	</select>
+
+	<select id="selectLastByDocId" resultType="Snapshot">
+		SELECT * FROM doc_snapshot
+		WHERE doc_id = #{docId}
+		ORDER BY created_time DESC
+		LIMIT 1
+	</select>
+</mapper>

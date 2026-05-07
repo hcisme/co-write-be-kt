@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.hcisme.cowrite.mappers.CollaboratorMapper">
+
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="Collaborator">
+        <!--文档关系表id-->
+        <result column="id" property="id"/>
+        <!--关联文档表id-->
+        <result column="doc_id" property="docId"/>
+        <!--关联用户表id-->
+        <result column="user_id" property="userId"/>
+        <!--0:持有者 1:可编辑 2: 只读-->
+        <result column="role" property="role"/>
+        <!--创建时间-->
+        <result column="created_time" property="createdTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列-->
+    <sql id="base_column_list">
+        c.id, c.doc_id, c.user_id, c.role, c.created_time
+    </sql>
+
+    <sql id="base_condition_field">
+        <if test="query.id != null and query.id != ''">
+            and c.id = #{query.id}
+        </if>
+        <if test="query.docId != null and query.docId != ''">
+            and c.doc_id = #{query.docId}
+        </if>
+        <if test="query.userId != null and query.userId != ''">
+            and c.user_id = #{query.userId}
+        </if>
+        <if test="query.role != null and query.role != ''">
+            and c.role = #{query.role}
+        </if>
+        <if test="query.createdTime != null and query.createdTime != ''">
+            <![CDATA[ and c.created_time = str_to_date(#{query.createdTime}, '%Y-%m-%d') ]]>
+        </if>
+    </sql>
+
+    <!-- 通用条件列-->
+    <sql id="base_condition">
+        <where>
+            <include refid="base_condition_field"/>
+        </where>
+    </sql>
+
+    <!-- 通用查询条件列-->
+    <sql id="query_condition">
+        <where>
+            <include refid="base_condition_field"/>
+            <if test="query.docIdFuzzy != null and query.docIdFuzzy != ''">
+                and c.doc_id like concat('%', #{query.docIdFuzzy}, '%')
+            </if>
+            <if test="query.userIdFuzzy != null and query.userIdFuzzy != ''">
+                and c.user_id like concat('%', #{query.userIdFuzzy}, '%')
+            </if>
+            <if test="query.createdTimeStart != null and query.createdTimeStart != ''">
+                <![CDATA[ and c.created_time >= str_to_date(#{query.createdTimeStart}, '%Y-%m-%d') ]]>
+            </if>
+            <if test="query.createdTimeEnd != null and query.createdTimeEnd != ''">
+                <![CDATA[ and c.created_time < date_sub(str_to_date(#{query.createdTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+            </if>
+        </where>
+    </sql>
+
+    <!-- 查询集合-->
+    <select id="selectList" resultMap="base_result_map">
+        SELECT
+        <include refid="base_column_list"/>
+        FROM doc_collaborator c
+        <include refid="query_condition"/>
+        <if test="query.orderBy!=null and query.orderBy!=''">
+            order by ${query.orderBy}
+        </if>
+        <if test="query.simplePage!=null">
+            limit #{query.simplePage.start},#{query.simplePage.end}
+        </if>
+    </select>
+
+    <!-- 查询数量-->
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT count(1) FROM doc_collaborator c
+        <include refid="query_condition"/>
+    </select>
+
+    <!-- 插入 （匹配有值的字段）-->
+    <insert id="insert" parameterType="Collaborator" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO doc_collaborator
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.docId != null">
+                doc_id,
+            </if>
+            <if test="bean.userId != null">
+                user_id,
+            </if>
+            <if test="bean.role != null">
+                role,
+            </if>
+            <if test="bean.createdTime != null">
+                created_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.docId != null">
+                #{bean.docId},
+            </if>
+            <if test="bean.userId != null">
+                #{bean.userId},
+            </if>
+            <if test="bean.role != null">
+                #{bean.role},
+            </if>
+            <if test="bean.createdTime != null">
+                #{bean.createdTime},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 插入或者更新 （匹配有值的字段）-->
+    <insert id="insertOrUpdate" parameterType="Collaborator" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO doc_collaborator
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.id != null">
+                id,
+            </if>
+            <if test="bean.docId != null">
+                doc_id,
+            </if>
+            <if test="bean.userId != null">
+                user_id,
+            </if>
+            <if test="bean.role != null">
+                role,
+            </if>
+            <if test="bean.createdTime != null">
+                created_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.id != null">
+                #{bean.id},
+            </if>
+            <if test="bean.docId != null">
+                #{bean.docId},
+            </if>
+            <if test="bean.userId != null">
+                #{bean.userId},
+            </if>
+            <if test="bean.role != null">
+                #{bean.role},
+            </if>
+            <if test="bean.createdTime != null">
+                #{bean.createdTime},
+            </if>
+        </trim>
+        on DUPLICATE key update
+        <trim prefix="" suffix="" suffixOverrides=",">
+            <if test="bean.docId != null">
+                doc_id = VALUES(doc_id),
+            </if>
+            <if test="bean.userId != null">
+                user_id = VALUES(user_id),
+            </if>
+            <if test="bean.role != null">
+                role = VALUES(role),
+            </if>
+            <if test="bean.createdTime != null">
+                created_time = VALUES(created_time),
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 添加 （批量插入）-->
+    <insert id="insertBatch" parameterType="Collaborator" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO doc_collaborator(
+        doc_id,
+        user_id,
+        role,
+        created_time
+        ) values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.docId},
+            #{item.userId},
+            #{item.role},
+            #{item.createdTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量新增修改 （批量插入）-->
+    <insert id="insertOrUpdateBatch" parameterType="Collaborator">
+        INSERT INTO doc_collaborator(
+        id,
+        doc_id,
+        user_id,
+        role,
+        created_time
+        ) values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.id},
+            #{item.docId},
+            #{item.userId},
+            #{item.role},
+            #{item.createdTime}
+            )
+        </foreach>
+        on DUPLICATE key update
+        doc_id = VALUES(doc_id),
+        user_id = VALUES(user_id),
+        role = VALUES(role),
+        created_time = VALUES(created_time)
+    </insert>
+
+    <!--多条件修改-->
+    <update id="updateByParam" parameterType="CollaboratorQuery">
+        UPDATE doc_collaborator c
+        <set>
+            <if test="bean.docId != null">
+                doc_id = #{bean.docId},
+            </if>
+            <if test="bean.userId != null">
+                user_id = #{bean.userId},
+            </if>
+            <if test="bean.role != null">
+                role = #{bean.role},
+            </if>
+            <if test="bean.createdTime != null">
+                created_time = #{bean.createdTime},
+            </if>
+        </set>
+        <include refid="query_condition"/>
+    </update>
+
+    <!--多条件删除-->
+    <delete id="deleteByParam">
+        delete c from doc_collaborator c
+        <include refid="query_condition"/>
+    </delete>
+
+    <!-- 根据id修改-->
+    <update id="updateById">
+        UPDATE doc_collaborator
+        <set>
+            <if test="bean.docId != null">
+                doc_id = #{bean.docId},
+            </if>
+            <if test="bean.userId != null">
+                user_id = #{bean.userId},
+            </if>
+            <if test="bean.role != null">
+                role = #{bean.role},
+            </if>
+            <if test="bean.createdTime != null">
+                created_time = #{bean.createdTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 根据id删除-->
+    <delete id="deleteById">
+        delete
+        from doc_collaborator
+        where id = #{id}
+    </delete>
+
+    <!-- 根据id查询-->
+    <select id="selectById" resultMap="base_result_map">
+        select
+        <include refid="base_column_list"/>
+        from doc_collaborator c where c.id = #{id}
+    </select>
+
+    <!-- 根据docId 和 userId修改-->
+    <update id="updateByDocIdAndUserId">
+        UPDATE doc_collaborator
+        <set>
+            <if test="bean.role != null">
+                role = #{bean.role},
+            </if>
+            <if test="bean.createdTime != null">
+                created_time = #{bean.createdTime},
+            </if>
+        </set>
+        where doc_id = #{docId} and user_id = #{userId}
+    </update>
+
+    <!-- 根据docId 和 userId删除-->
+    <delete id="deleteByDocIdAndUserId">
+        delete
+        from doc_collaborator
+        where doc_id = #{docId}
+          and user_id = #{userId}
+    </delete>
+
+    <!-- 根据docId 和 userId查询-->
+    <select id="selectByDocIdAndUserId" resultMap="base_result_map">
+        select
+        <include refid="base_column_list"/>
+        from doc_collaborator c where c.doc_id = #{docId} and c.user_id = #{userId}
+    </select>
+
+
+    <select id="selectListByUserId" resultType="Collaborator">
+        SELECT
+        c.*,
+        d.title AS docTitle,
+        u.username AS username,
+        u.email AS email
+        FROM doc_collaborator c
+        INNER JOIN document d ON c.doc_id = d.id
+        INNER JOIN user u ON d.owner_id = u.id
+        WHERE c.user_id = #{query.userId} AND d.deleted = 0
+        <if test="query.orderBy!=null and query.orderBy!=''">
+            order by ${query.orderBy}
+        </if>
+        <if test="query.simplePage!=null">
+            limit #{query.simplePage.start},#{query.simplePage.end}
+        </if>
+    </select>
+</mapper>
