@@ -1,15 +1,12 @@
 package io.github.hcisme.cowrite.service.impl
 
 import io.github.hcisme.cowrite.entity.enums.DeleteStatusEnum
-import io.github.hcisme.cowrite.entity.enums.PageSizeEnum
 import io.github.hcisme.cowrite.entity.pojo.Document
 import io.github.hcisme.cowrite.entity.pojo.Snapshot
 import io.github.hcisme.cowrite.entity.pojo.User
 import io.github.hcisme.cowrite.entity.query.DocumentQuery
-import io.github.hcisme.cowrite.entity.query.SimplePage
 import io.github.hcisme.cowrite.entity.query.SnapshotQuery
 import io.github.hcisme.cowrite.entity.query.UserQuery
-import io.github.hcisme.cowrite.entity.vo.PaginationResultVO
 import io.github.hcisme.cowrite.exception.BusinessException
 import io.github.hcisme.cowrite.mappers.SnapshotMapper
 import io.github.hcisme.cowrite.mappers.UserMapper
@@ -28,96 +25,6 @@ class SnapshotServiceImpl(
     private val userMapper: UserMapper<User, UserQuery>,
     private val docMapper: UserMapper<Document, DocumentQuery>
 ) : SnapshotService {
-
-    /**
-     * 根据条件查询列表
-     */
-    override fun findListByParam(param: SnapshotQuery): List<Snapshot> {
-        return snapshotMapper.selectList(param)
-    }
-
-    /**
-     * 根据条件查询数量
-     */
-    override fun findCountByParam(param: SnapshotQuery): Int {
-        return snapshotMapper.selectCount(param)
-    }
-
-    /**
-     * 分页查询
-     */
-    override fun findListByPage(param: SnapshotQuery): PaginationResultVO<Snapshot> {
-        val count = findCountByParam(param)
-        val pageSizeEnum = if (param.pageSize == null) PageSizeEnum.SIZE15.size else param.pageSize!!
-        val page = SimplePage(param.page, count, pageSizeEnum)
-        param.simplePage = page
-        val list = findListByParam(param)
-        val result = PaginationResultVO(count, page.pageSize, page.page, page.pageTotal, list)
-        return result
-    }
-
-    /**
-     * 新增
-     */
-    override fun add(bean: Snapshot): Int {
-        return snapshotMapper.insert(bean)
-    }
-
-    /**
-     * 新增 (或更新)
-     */
-    override fun addOrUpdate(bean: Snapshot): Int {
-        return snapshotMapper.insertOrUpdate(bean)
-    }
-
-    /**
-     * 批量新增
-     */
-    override fun addBatch(list: List<Snapshot>): Int {
-        return snapshotMapper.insertBatch(list)
-    }
-
-    /**
-     * 批量新增 (或更新)
-     */
-    override fun addOrUpdateBatch(list: List<Snapshot>): Int {
-        return snapshotMapper.insertOrUpdateBatch(list)
-    }
-
-    /**
-     * 多条件更新
-     */
-    override fun updateByParam(bean: Snapshot, param: SnapshotQuery): Int {
-        return snapshotMapper.updateByParam(bean, param)
-    }
-
-    /**
-     * 多条件删除
-     */
-    override fun deleteByParam(param: SnapshotQuery): Int {
-        return snapshotMapper.deleteByParam(param)
-    }
-
-    /**
-     * 根据Id查询对象
-     */
-    override fun getSnapshotById(id: Long): Snapshot? {
-        return snapshotMapper.selectById(id)
-    }
-
-    /**
-     * 根据Id修改
-     */
-    override fun updateSnapshotById(bean: Snapshot, id: Long): Int {
-        return snapshotMapper.updateById(bean, id)
-    }
-
-    /**
-     * 根据Id删除
-     */
-    override fun deleteSnapshotById(id: Long): Int {
-        return snapshotMapper.deleteById(id)
-    }
 
     @Transactional(rollbackFor = [Exception::class])
     override fun saveSnapshot(
