@@ -1,5 +1,6 @@
 package io.github.hcisme.cowrite.service.impl
 
+import io.github.hcisme.cowrite.entity.enums.DeleteStatusEnum
 import io.github.hcisme.cowrite.entity.enums.DocRoleEnum
 import io.github.hcisme.cowrite.entity.enums.ResponseCodeEnum
 import io.github.hcisme.cowrite.entity.pojo.Collaborator
@@ -23,7 +24,8 @@ import java.time.LocalDateTime
 class CollaboratorServiceImpl(
     private val documentMapper: DocumentMapper<Document, DocumentQuery>,
     private val userMapper: UserMapper<User, UserQuery>,
-    private val collaboratorMapper: CollaboratorMapper<Collaborator, CollaboratorQuery>
+    private val collaboratorMapper: CollaboratorMapper<Collaborator, CollaboratorQuery>,
+    private val docMapper: DocumentMapper<Document, DocumentQuery>
 ) : CollaboratorService {
 
     override fun addCollaborator(operatorId: String, docId: String, collaboratorId: String, role: Int) {
@@ -62,6 +64,11 @@ class CollaboratorServiceImpl(
     }
 
     override fun checkPermission(docId: String, userId: String) {
+        val doc = docMapper.selectById(docId)
+        if (doc == null || doc.deleted == DeleteStatusEnum.DELETED.status) {
+            throw BusinessException("资源不存在")
+        }
+
         collaboratorMapper.selectByDocIdAndUserId(docId = docId, userId = userId)
             ?: throw BusinessException(ResponseCodeEnum.CODE_500)
     }

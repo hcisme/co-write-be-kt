@@ -344,9 +344,11 @@
 	</select>
 
 	<select id="selectLastByDocId" resultType="Snapshot">
-		SELECT * FROM doc_snapshot
-		WHERE doc_id = #{docId}
-		ORDER BY created_time DESC
-		LIMIT 1
-	</select>
+        SELECT
+        <include refid="base_column_list"/>
+        FROM doc_snapshot s
+        WHERE doc_id = #{docId}
+        ORDER BY created_time DESC
+        LIMIT 1
+    </select>
 </mapper>

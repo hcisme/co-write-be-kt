@@ -1,15 +1,14 @@
 package io.github.hcisme.cowrite.controller
 
+import io.github.hcisme.cowrite.annotation.Access
 import io.github.hcisme.cowrite.entity.dto.CheckPermissionDTO
 import io.github.hcisme.cowrite.entity.dto.SaveSnapshotDTO
+import io.github.hcisme.cowrite.entity.pojo.Snapshot
 import io.github.hcisme.cowrite.entity.vo.ResponseVO
 import io.github.hcisme.cowrite.service.CollaboratorService
 import io.github.hcisme.cowrite.service.SnapshotService
 import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/internal/doc")
@@ -18,16 +17,21 @@ class InternalController(
     private val snapshotService: SnapshotService
 ) : ABaseController() {
 
+    @Access
     @PostMapping("/check-permission")
     fun checkPermission(@Validated @RequestBody checkPermissionDTO: CheckPermissionDTO): ResponseVO<Any?> {
+        val user = getUserInfoByToken()!!
         collaboratorService.checkPermission(
             docId = checkPermissionDTO.docId!!,
-            userId = checkPermissionDTO.userId!!
+            userId = user.id!!
         )
         return getSuccessResponseVO(null)
     }
 
-    @PostMapping("/snapshot")
+    /**
+     * node端 定期保存
+     */
+    @PostMapping("/saveSnapshot")
     fun saveSnapshot(@Validated @RequestBody saveSnapshotDTO: SaveSnapshotDTO): ResponseVO<Any?> {
         snapshotService.saveSnapshot(
             docId = saveSnapshotDTO.docId!!,
@@ -36,5 +40,13 @@ class InternalController(
             creatorId = saveSnapshotDTO.creatorId!!
         )
         return getSuccessResponseVO(null)
+    }
+
+    @Access
+    @GetMapping("/getLastSnapshot")
+    fun getLastSnapshot(@RequestParam docId: String): ResponseVO<Snapshot?> {
+        val user = getUserInfoByToken()!!
+        val snapshot = snapshotService.getLastSnapshot(userId = user.id!!, docId = docId)
+        return getSuccessResponseVO(snapshot)
     }
 }

@@ -1,6 +1,7 @@
 package io.github.hcisme.cowrite.interceptor
 
 import io.github.hcisme.cowrite.annotation.Access
+import io.github.hcisme.cowrite.entity.Constants
 import io.github.hcisme.cowrite.entity.enums.ResponseCodeEnum
 import io.github.hcisme.cowrite.exception.BusinessException
 import io.github.hcisme.cowrite.redis.RedisUtils
@@ -25,17 +26,23 @@ class AccessInterceptor : HandlerInterceptor {
         handler: Any
     ): Boolean {
         try {
-            if (handler is HandlerMethod) {
-                val method = handler.method
+            if (handler !is HandlerMethod) return true
 
-                // 权限处理
-                if (method.isAnnotationPresent(Access::class.java)) {
-                    val webAccess = method.getAnnotation(Access::class.java)
-                    return checkAccess(webAccess.isRequiredLoginAccess)
+            val method = handler.method
+            val uri = request.requestURI
+
+            if (uri.contains("/internal/")) {
+                val secret = request.getHeader(Constants.INTERNAL_SECRET_KEY)
+                if (secret == null || secret != Constants.INTERNAL_SECRET) {
+                    throw BusinessException("内部非法调用")
                 }
-
-                return true
             }
+
+            if (method.isAnnotationPresent(Access::class.java)) {
+                val access = method.getAnnotation(Access::class.java)
+                return checkAccess(access.isRequiredLoginAccess)
+            }
+
             return true
         } catch (e: BusinessException) {
             throw e
@@ -44,8 +51,8 @@ class AccessInterceptor : HandlerInterceptor {
         }
     }
 
-    private fun checkAccess(isLoginAccess: Boolean): Boolean {
-        if (!isLoginAccess) {
+    private fun checkAccess(isRequiredLoginAccess: Boolean): Boolean {
+        if (!isRequiredLoginAccess) {
             return true
         }
 
@@ -53,7 +60,6 @@ class AccessInterceptor : HandlerInterceptor {
         val token = attributes.request.getHeader("token") ?: throw BusinessException(ResponseCodeEnum.CODE_401)
         redisUtils.getUserInfoByToken(token)
             ?: throw BusinessException(ResponseCodeEnum.CODE_401)
-
         return true
     }
 }

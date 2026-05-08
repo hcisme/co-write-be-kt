@@ -29,12 +29,4 @@ object StringTools {
             throw RuntimeException("密码加密失败", e)
         }
     }
-
-    fun getRandomString(count: Int): String {
-        if (count <= 0) return ""
-
-        return (1..count)
-            .map { CHARS_ALPHANUMERIC.random() }
-            .joinToString("")
-    }
 }
