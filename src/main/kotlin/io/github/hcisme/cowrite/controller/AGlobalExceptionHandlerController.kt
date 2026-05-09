@@ -46,32 +46,9 @@ class AGlobalExceptionHandlerController : ABaseController() {
             is HandlerMethodValidationException,
             is MissingServletRequestPartException,
             is MissingServletRequestParameterException -> {
-                val map = HashMap<String, String>()
                 ajaxResponse.code = ResponseCodeEnum.CODE_600.code
                 ajaxResponse.info = ResponseCodeEnum.CODE_600.msg
                 ajaxResponse.status = STATUS_ERROR
-
-                if (e is BindException && e.hasErrors()) {
-                    val fieldErrors = e.fieldErrors
-                    for (i in fieldErrors.indices) {
-                        val field = fieldErrors[i]
-                        if (!map.containsKey(field.field)) {
-                            map[field.field] = ""
-                        }
-                        map[field.field] = map[field.field] + (field.defaultMessage ?: "") + ";"
-                    }
-                    ajaxResponse.data = map
-                }
-
-                if (e is MissingServletRequestPartException) {
-                    map[e.requestPartName] = e.requestPartName + " 必传"
-                    ajaxResponse.data = map
-                }
-
-                if (e is MissingServletRequestParameterException) {
-                    map[e.parameterName] = e.parameterName + " 必传"
-                    ajaxResponse.data = map
-                }
             }
 
             is DuplicateKeyException -> {
