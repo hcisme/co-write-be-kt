@@ -9,7 +9,7 @@ interface DocumentService {
 
     fun create(title: String, ownerId: String)
 
-    fun getListByUserId(userId: String): List<Collaborator>
+    fun getListByUserId(userId: String, orderBy: String): List<Collaborator>
 
     fun deleteDocByDocId(docId: String, userId: String)
 }

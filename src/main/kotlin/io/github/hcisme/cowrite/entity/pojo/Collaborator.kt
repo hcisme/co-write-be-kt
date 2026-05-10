@@ -32,6 +32,7 @@ data class Collaborator(
 
     // 关联字段
     var docTitle: String? = null,
-    var username: String? = null,
-    var email: String? = null
+    var ownerId: String? = null,
+    var ownerName: String? = null,
+    var ownerEmail: String? = null
 ) : Serializable

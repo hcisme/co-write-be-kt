@@ -48,9 +48,9 @@ class DocumentServiceImpl(
         collaboratorMapper.insert(collaborator)
     }
 
-    override fun getListByUserId(userId: String): List<Collaborator> {
+    override fun getListByUserId(userId: String, orderBy: String): List<Collaborator> {
         return collaboratorMapper.selectListByUserId(
-            CollaboratorQuery(userId = userId)
+            CollaboratorQuery(userId = userId).apply { this.orderBy = orderBy }
         )
     }
 

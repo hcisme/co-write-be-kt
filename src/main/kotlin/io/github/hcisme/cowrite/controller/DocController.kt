@@ -36,7 +36,7 @@ class DocController(
     @GetMapping("/list")
     fun getList(): ResponseVO<List<Collaborator>> {
         val user = getUserInfoByToken()!!
-        val list = documentService.getListByUserId(userId = user.id!!)
+        val list = documentService.getListByUserId(userId = user.id!!, orderBy = "created_time desc")
         return getSuccessResponseVO(list)
     }
 

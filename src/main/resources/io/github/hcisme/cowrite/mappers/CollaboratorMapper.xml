@@ -310,8 +310,9 @@
         SELECT
         c.*,
         d.title AS docTitle,
-        u.username AS username,
-        u.email AS email
+        d.owner_id AS ownerId,
+        u.username AS ownerName,
+        u.email AS ownerEmail
         FROM doc_collaborator c
         INNER JOIN document d ON c.doc_id = d.id
         INNER JOIN user u ON d.owner_id = u.id
