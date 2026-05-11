@@ -63,13 +63,13 @@ class CollaboratorServiceImpl(
         collaboratorMapper.insert(newCollaborator)
     }
 
-    override fun checkPermission(docId: String, userId: String) {
+    override fun checkPermission(docId: String, userId: String): Collaborator {
         val doc = docMapper.selectById(docId)
         if (doc == null || doc.deleted == DeleteStatusEnum.DELETED.status) {
             throw BusinessException("资源不存在")
         }
 
-        collaboratorMapper.selectByDocIdAndUserId(docId = docId, userId = userId)
+        return collaboratorMapper.selectByDocIdAndUserId(docId = docId, userId = userId)
             ?: throw BusinessException(ResponseCodeEnum.CODE_500)
     }
 }

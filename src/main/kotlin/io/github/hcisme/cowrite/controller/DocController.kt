@@ -2,6 +2,7 @@ package io.github.hcisme.cowrite.controller
 
 import io.github.hcisme.cowrite.annotation.Access
 import io.github.hcisme.cowrite.entity.dto.AddCollaboratorDTO
+import io.github.hcisme.cowrite.entity.dto.CheckPermissionDTO
 import io.github.hcisme.cowrite.entity.dto.CreateDocDTO
 import io.github.hcisme.cowrite.entity.pojo.Collaborator
 import io.github.hcisme.cowrite.entity.vo.ResponseVO
@@ -66,5 +67,19 @@ class DocController(
             role = addDTO.role!!
         )
         return getSuccessResponseVO(null)
+    }
+
+    /**
+     * 进入文档时 检查权限
+     */
+    @Access
+    @PostMapping("/check-permission")
+    fun checkPermission(@Validated @RequestBody checkPermissionDTO: CheckPermissionDTO): ResponseVO<Collaborator?> {
+        val user = getUserInfoByToken()!!
+        val collaborator= collaboratorService.checkPermission(
+            docId = checkPermissionDTO.docId!!,
+            userId = user.id!!
+        )
+        return getSuccessResponseVO(collaborator)
     }
 }

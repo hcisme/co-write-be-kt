@@ -3,6 +3,7 @@ package io.github.hcisme.cowrite.controller
 import io.github.hcisme.cowrite.annotation.Access
 import io.github.hcisme.cowrite.entity.dto.CheckPermissionDTO
 import io.github.hcisme.cowrite.entity.dto.SaveSnapshotDTO
+import io.github.hcisme.cowrite.entity.pojo.Collaborator
 import io.github.hcisme.cowrite.entity.pojo.Snapshot
 import io.github.hcisme.cowrite.entity.vo.ResponseVO
 import io.github.hcisme.cowrite.service.CollaboratorService
@@ -19,13 +20,13 @@ class InternalController(
 
     @Access
     @PostMapping("/check-permission")
-    fun checkPermission(@Validated @RequestBody checkPermissionDTO: CheckPermissionDTO): ResponseVO<Any?> {
+    fun checkPermission(@Validated @RequestBody checkPermissionDTO: CheckPermissionDTO): ResponseVO<Collaborator?> {
         val user = getUserInfoByToken()!!
-        collaboratorService.checkPermission(
+        val collaborator= collaboratorService.checkPermission(
             docId = checkPermissionDTO.docId!!,
             userId = user.id!!
         )
-        return getSuccessResponseVO(null)
+        return getSuccessResponseVO(collaborator)
     }
 
     /**
