@@ -1,5 +1,6 @@
 package io.github.hcisme.cowrite.mappers
 
+import io.github.hcisme.cowrite.entity.vo.DocInCollaboratorVO
 import org.apache.ibatis.annotations.Param
 
 /**
@@ -37,4 +38,6 @@ interface CollaboratorMapper<T, P> : BaseMapper<T, P> {
 	fun deleteByDocIdAndUserId(@Param("docId") docId: String, @Param("userId") userId: String): Int
 
 	fun selectListByUserId(@Param("query") p: P): List<T>
+
+	fun selectCollaboratorsByDocId(@Param("query") p: P): List<DocInCollaboratorVO>
 }

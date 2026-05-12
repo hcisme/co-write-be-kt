@@ -37,7 +37,7 @@ fun RedisUtils.saveTokenUserInfo(tokenUserInfoVO: TokenUserInfoVO) {
         this@saveTokenUserInfo.setValueAndExpire(
             Constants.REDIS_KEY_TOKEN + token,
             this@apply,
-            Constants.REDIS_KEY_TOKEN_EXPIRES_15_DAY.toLong()
+            Constants.REDIS_KEY_TOKEN_EXPIRES_15_DAY
         )
     }
 }

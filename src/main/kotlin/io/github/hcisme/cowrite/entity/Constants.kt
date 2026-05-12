@@ -27,7 +27,7 @@ object Constants {
      *
      * 一分钟
      */
-    const val REDIS_TIME_1MIN = 60000
+    const val REDIS_TIME_1MIN = 60000L
 
     /**
      * 单位 ms

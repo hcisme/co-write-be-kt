@@ -324,4 +324,21 @@
             limit #{query.simplePage.start},#{query.simplePage.end}
         </if>
     </select>
+
+    <select id="selectCollaboratorsByDocId" resultType="DocInCollaboratorVO">
+        SELECT
+        u.id AS userId,
+        u.username,
+        u.email,
+        c.role
+        FROM doc_collaborator c
+        INNER JOIN user u ON c.user_id = u.id
+        WHERE c.doc_id = #{query.docId}
+        <if test="query.orderBy!=null and query.orderBy!=''">
+            order by ${query.orderBy}
+        </if>
+        <if test="query.simplePage!=null">
+            limit #{query.simplePage.start},#{query.simplePage.end}
+        </if>
+    </select>
 </mapper>

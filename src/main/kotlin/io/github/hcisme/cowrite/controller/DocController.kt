@@ -1,10 +1,12 @@
 package io.github.hcisme.cowrite.controller
 
 import io.github.hcisme.cowrite.annotation.Access
-import io.github.hcisme.cowrite.entity.dto.AddCollaboratorDTO
+import io.github.hcisme.cowrite.entity.dto.AddOrUpdateMemberDTO
 import io.github.hcisme.cowrite.entity.dto.CheckPermissionDTO
 import io.github.hcisme.cowrite.entity.dto.CreateDocDTO
+import io.github.hcisme.cowrite.entity.dto.DeleteMemberDTO
 import io.github.hcisme.cowrite.entity.pojo.Collaborator
+import io.github.hcisme.cowrite.entity.vo.DocInCollaboratorVO
 import io.github.hcisme.cowrite.entity.vo.ResponseVO
 import io.github.hcisme.cowrite.service.CollaboratorService
 import io.github.hcisme.cowrite.service.DocumentService
@@ -57,7 +59,7 @@ class DocController(
      */
     @Access
     @PostMapping("/share")
-    fun share(@Validated @RequestBody addDTO: AddCollaboratorDTO): ResponseVO<Any?> {
+    fun share(@Validated @RequestBody addDTO: AddOrUpdateMemberDTO): ResponseVO<Any?> {
         val user = getUserInfoByToken()!!
 
         collaboratorService.addCollaborator(
@@ -76,10 +78,51 @@ class DocController(
     @PostMapping("/check-permission")
     fun checkPermission(@Validated @RequestBody checkPermissionDTO: CheckPermissionDTO): ResponseVO<Collaborator?> {
         val user = getUserInfoByToken()!!
-        val collaborator= collaboratorService.checkPermission(
+        val collaborator = collaboratorService.checkPermission(
             docId = checkPermissionDTO.docId!!,
             userId = user.id!!
         )
         return getSuccessResponseVO(collaborator)
+    }
+
+    /**
+     * 查询一个文档内的所有成员
+     */
+    @Access
+    @GetMapping("/collaborators/{docId}")
+    fun getCollaboratorsByDocId(@PathVariable docId: String): ResponseVO<List<DocInCollaboratorVO>> {
+        val list = collaboratorService.getCollaboratorsByDocId(docId = docId, order = "role")
+        return getSuccessResponseVO(list)
+    }
+
+    /**
+     * 修改文档内成员的权限
+     */
+    @Access
+    @PostMapping("/collaborator/role")
+    fun putCollaboratorRole(@Validated @RequestBody updateDTO: AddOrUpdateMemberDTO): ResponseVO<Any?> {
+        val user = getUserInfoByToken()!!
+        collaboratorService.updateRole(
+            operatorId = user.id!!,
+            docId = updateDTO.docId!!,
+            collaboratorId = updateDTO.userId!!,
+            role = updateDTO.role!!
+        )
+        return getSuccessResponseVO(null)
+    }
+
+    /**
+     * 自己退出 或者 文档的拥有者删人
+     */
+    @Access
+    @DeleteMapping("/collaborator")
+    fun deleteMember(@Validated @RequestBody deleteMemberDTO: DeleteMemberDTO): ResponseVO<Any?> {
+        val user = getUserInfoByToken()!!
+        collaboratorService.deleteMember(
+            operatorId = user.id!!,
+            docId = deleteMemberDTO.docId!!,
+            collaboratorId = deleteMemberDTO.userId!!
+        )
+        return getSuccessResponseVO(null)
     }
 }

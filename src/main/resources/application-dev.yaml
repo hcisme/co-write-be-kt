@@ -49,3 +49,7 @@ log:
   path: D:\code\kotlin\co-write\co-write-be-kt
   root:
     level: info
+
+node:
+  server:
+    url: http://127.0.0.1:3000
