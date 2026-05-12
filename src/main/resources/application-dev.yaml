@@ -53,3 +53,4 @@ log:
 node:
   server:
     url: http://127.0.0.1:3000
+    internal-secret: d0424d61-d3cf-4f67-84ff-a76fe42e5a49

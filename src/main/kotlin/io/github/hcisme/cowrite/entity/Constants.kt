@@ -4,7 +4,6 @@ object Constants {
     private const val REDIS_KEY_PREFIX = "cowrite"
 
     const val INTERNAL_SECRET_KEY = "Internal-Secret"
-    const val INTERNAL_SECRET = "d0424d61-d3cf-4f67-84ff-a76fe42e5a49"
 
     const val REDIS_KEY_CAPTCHA_KEY = "$REDIS_KEY_PREFIX:captcha:"
 

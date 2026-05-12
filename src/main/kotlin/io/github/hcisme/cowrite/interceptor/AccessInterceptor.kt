@@ -9,6 +9,7 @@ import io.github.hcisme.cowrite.redis.getUserInfoByToken
 import jakarta.annotation.Resource
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
@@ -16,9 +17,11 @@ import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
 
 @Component
-class AccessInterceptor : HandlerInterceptor {
-    @Resource
-    private lateinit var redisUtils: RedisUtils
+class AccessInterceptor(
+    private val redisUtils: RedisUtils,
+    @Value($$"${node.server.internal-secret}")
+    private val internalSecret: String
+) : HandlerInterceptor {
 
     override fun preHandle(
         request: HttpServletRequest,
@@ -33,7 +36,7 @@ class AccessInterceptor : HandlerInterceptor {
 
             if (uri.contains("/internal/")) {
                 val secret = request.getHeader(Constants.INTERNAL_SECRET_KEY)
-                if (secret == null || secret != Constants.INTERNAL_SECRET) {
+                if (secret == null || secret != internalSecret) {
                     throw BusinessException("内部非法调用")
                 }
             }

@@ -37,7 +37,9 @@ class CollaboratorServiceImpl(
     private val collaboratorMapper: CollaboratorMapper<Collaborator, CollaboratorQuery>,
     private val docMapper: DocumentMapper<Document, DocumentQuery>,
     @Value($$"${node.server.url}")
-    private val nodeServerUrl: String
+    private val nodeServerUrl: String,
+    @Value($$"${node.server.internal-secret}")
+    private val internalSecret: String
 ) : CollaboratorService {
     private val log = LoggerFactory.getLogger(CollaboratorServiceImpl::class.java)
 
@@ -195,7 +197,7 @@ class CollaboratorServiceImpl(
     private fun notifyNodeSyncPermission(docId: String, userId: String, role: Int?, action: String) {
         val client = RestTemplate()
         val headers = HttpHeaders()
-        headers.set(Constants.INTERNAL_SECRET_KEY, Constants.INTERNAL_SECRET)
+        headers.set(Constants.INTERNAL_SECRET_KEY, internalSecret)
         headers.contentType = MediaType.APPLICATION_JSON
 
         val body = mapOf(
